@@ -3,7 +3,7 @@ use anyhow::anyhow;
 use scylla::Session;
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{error, info};
+use tracing::{debug, error};
 
 pub async fn writer(session: Arc<Session>) -> Result<models::Metric, anyhow::Error> {
     let metrics = session.get_metrics();
@@ -66,7 +66,7 @@ pub async fn worker(session: Arc<Session>) {
     loop {
         interval.tick().await;
         match writer(session.clone()).await {
-            Ok(_) => info!("Metrics written successfully"),
+            Ok(_) => debug!("Metrics written successfully"),
             Err(e) => error!("Error writing metrics: {}", e),
         }
     }

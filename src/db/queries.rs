@@ -14,3 +14,11 @@ pub async fn write_metrics(
         )
         .await
 }
+
+pub async fn write_devices(
+    session: &Arc<Session>,
+) -> anyhow::Result<PreparedStatement, QueryError> {
+    session
+        .prepare("INSERT INTO devices (device_id, timestamp, sensor_data) VALUES (?, ?, ?)")
+        .await
+}
