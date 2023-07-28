@@ -1,4 +1,4 @@
-use crate::db::{models, queries};
+use crate::db::models;
 use anyhow::anyhow;
 use scylla::Session;
 use std::sync::Arc;
@@ -35,7 +35,13 @@ pub async fn writer(session: Arc<Session>) -> Result<models::Metric, anyhow::Err
         latency_percentile_ms,
     };
 
-    let cql = queries::write_metrics(&session).await?;
+    let cql = session
+        .prepare(
+            "INSERT INTO demo.metrics \
+            (node_id, timestamp, queries_num, queries_iter_num, errors_num, errors_iter_num, latency_avg_ms, latency_percentile_ms) \
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .await?;
 
     match session
         .execute(

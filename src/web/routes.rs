@@ -1,4 +1,3 @@
-use crate::db::models;
 use crate::db::models::*;
 use rocket::fs::NamedFile;
 use rocket::http::Status;
@@ -10,7 +9,6 @@ use scylla::{IntoTypedRows, Session};
 use serde::Serialize;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::{error, info};
 
 #[get("/")]
 pub async fn index() -> Option<NamedFile> {
@@ -47,13 +45,17 @@ pub async fn metrics(
                 node_id: curr.node_id.clone(),
                 timestamp: curr.timestamp,
                 queries_rate: (curr.queries_num - prev.queries_num) as f64
-                    / ((curr.timestamp - prev.timestamp) as f64 / 1000.0), // conversion from millis to seconds
+                    / ((curr.timestamp - prev.timestamp) as f64 / 1000.0)
+                    * 100.0, // conversion from millis to seconds
                 queries_iter_rate: (curr.queries_iter_num - prev.queries_iter_num) as f64
-                    / ((curr.timestamp - prev.timestamp) as f64 / 1000.0), // conversion from millis to seconds
+                    / ((curr.timestamp - prev.timestamp) as f64 / 1000.0)
+                    * 100.0, // conversion from millis to seconds
                 errors_rate: (curr.errors_num - prev.errors_num) as f64
-                    / ((curr.timestamp - prev.timestamp) as f64 / 1000.0), // conversion from millis to seconds
+                    / ((curr.timestamp - prev.timestamp) as f64 / 1000.0)
+                    * 100.0, // conversion from millis to seconds
                 errors_iter_rate: (curr.errors_iter_num - prev.errors_iter_num) as f64
-                    / ((curr.timestamp - prev.timestamp) as f64 / 1000.0), // conversion from millis to seconds
+                    / ((curr.timestamp - prev.timestamp) as f64 / 1000.0)
+                    * 100.0, // conversion from millis to seconds
                 latency_avg_ms: curr.latency_avg_ms,
                 latency_percentile_ms: curr.latency_percentile_ms,
                 // Add the total fields

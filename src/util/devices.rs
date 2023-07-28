@@ -1,4 +1,3 @@
-use crate::db::queries;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use scylla::batch::Batch;

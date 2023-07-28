@@ -4,8 +4,7 @@ mod web;
 
 use crate::db::connection;
 use crate::util::devices;
-use rand::{Rng, SeedableRng};
-use scylla::IntoTypedRows;
+use rand::SeedableRng;
 use std::error::Error;
 use std::sync::Arc;
 use tokio::{task, try_join};
