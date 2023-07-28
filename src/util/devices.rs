@@ -3,6 +3,7 @@ use rand::{Rng, SeedableRng};
 use scylla::batch::Batch;
 use scylla::transport::session::Session;
 use scylla::IntoTypedRows;
+use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use tracing::{debug, error};
@@ -15,15 +16,21 @@ pub async fn simulator(
 ) -> Result<(), anyhow::Error> {
     let total_ratio = read_ratio + write_ratio;
     let mut rng = StdRng::from_entropy();
+    let known_uuid = Uuid::from_str("dce006bf-470c-4ea6-93e2-209f7d520460")?;
     loop {
         let mut batch: Batch = Default::default();
         let mut batch_values = Vec::with_capacity(100);
-        for _ in 0..100 {
+        let timestamp_now = chrono::Utc::now().timestamp_millis();
+        let timestamp_ago = timestamp_now - 3 * 1000;
+        for (index, _value) in (0..100).enumerate() {
             let rand_num: u8 = rng.gen_range(0..total_ratio);
             if rand_num < read_ratio {
                 // Simulate a read operation.
                 match session
-                    .query("SELECT sensor_data FROM devices LIMIT 1", &[])
+                    .query(
+                        "SELECT sensor_data FROM devices WHERE device_id = ? AND timestamp > ? LIMIT 1",
+                        (known_uuid, timestamp_ago),
+                    )
                     .await
                 {
                     Ok(response) => {
@@ -40,7 +47,11 @@ pub async fn simulator(
                 }
             } else {
                 // Simulate a write operation.
-                let uuid = Uuid::new_v4();
+                let uuid = if index == 0 {
+                    known_uuid
+                } else {
+                    Uuid::new_v4()
+                };
                 let sensor_data: i64 = rng.gen(); // Generate random sensor data.
                 batch.append_statement(
                     "INSERT INTO devices (device_id, timestamp, sensor_data) VALUES (?, ?, ?)",
