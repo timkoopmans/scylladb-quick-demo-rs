@@ -13,6 +13,7 @@ pub async fn simulator(
     session: Arc<Session>,
     read_ratio: u8,
     write_ratio: u8,
+    ops_per_iter: u8,
 ) -> Result<(), anyhow::Error> {
     let total_ratio = read_ratio + write_ratio;
     let mut rng = StdRng::from_entropy();
@@ -22,7 +23,7 @@ pub async fn simulator(
         let mut batch_values = Vec::with_capacity(100);
         let timestamp_now = chrono::Utc::now().timestamp_millis();
         let timestamp_ago = timestamp_now - 3 * 1000;
-        for (index, _value) in (0..100).enumerate() {
+        for (index, _value) in (0..ops_per_iter).enumerate() {
             let rand_num: u8 = rng.gen_range(0..total_ratio);
             if rand_num < read_ratio {
                 // Simulate a read operation.
