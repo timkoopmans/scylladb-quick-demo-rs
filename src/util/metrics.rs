@@ -5,8 +5,11 @@ use std::sync::Arc;
 use std::time::Duration;
 use tracing::{debug, error};
 
-pub async fn writer(session: Arc<Session>) -> Result<models::Metric, anyhow::Error> {
-    let metrics = session.get_metrics();
+pub async fn writer(
+    metrics_session: Arc<Session>,
+    devices_session: Arc<Session>,
+) -> Result<models::Metric, anyhow::Error> {
+    let metrics = devices_session.get_metrics();
 
     let latency_avg_ms = match metrics.get_latency_avg_ms() {
         Ok(latency_avg_ms) => latency_avg_ms as i64,
@@ -35,7 +38,7 @@ pub async fn writer(session: Arc<Session>) -> Result<models::Metric, anyhow::Err
         latency_percentile_ms,
     };
 
-    let cql = session
+    let cql = metrics_session
         .prepare(
             "INSERT INTO demo.metrics \
             (node_id, timestamp, queries_num, queries_iter_num, errors_num, errors_iter_num, latency_avg_ms, latency_percentile_ms) \
@@ -43,7 +46,7 @@ pub async fn writer(session: Arc<Session>) -> Result<models::Metric, anyhow::Err
         )
         .await?;
 
-    match session
+    match metrics_session
         .execute(
             &cql,
             (
@@ -67,11 +70,14 @@ pub async fn writer(session: Arc<Session>) -> Result<models::Metric, anyhow::Err
     }
 }
 
-pub async fn worker(session: Arc<Session>) -> Result<(), anyhow::Error> {
+pub async fn worker(
+    metrics_session: Arc<Session>,
+    devices_session: Arc<Session>,
+) -> Result<(), anyhow::Error> {
     let mut interval = tokio::time::interval(Duration::from_secs(1));
     loop {
         interval.tick().await;
-        match writer(session.clone()).await {
+        match writer(metrics_session.clone(), devices_session.clone()).await {
             Ok(_) => debug!("Metrics written successfully"),
             Err(e) => error!("Error writing metrics: {}", e),
         }

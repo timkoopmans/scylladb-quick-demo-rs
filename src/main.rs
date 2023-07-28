@@ -15,17 +15,25 @@ async fn main() -> Result<(), Box<dyn Error>> {
     dotenv::dotenv().ok();
     util::logging::init();
 
-    let session = Arc::new(
+    let metrics_session = Arc::new(
+        connection::builder()
+            .await
+            .expect("Failed to connect to database"),
+    );
+    let devices_session = Arc::new(
         connection::builder()
             .await
             .expect("Failed to connect to database"),
     );
 
-    let web = server::init(session.clone()).await;
+    let web = server::init(metrics_session.clone()).await;
     tokio::spawn(async { web.launch().await.unwrap() });
 
-    let metrics_task = task::spawn(metrics::worker(session.clone()));
-    let devices_task = task::spawn(devices::simulator(session.clone(), 80, 20));
+    let metrics_task = task::spawn(metrics::worker(
+        metrics_session.clone(),
+        devices_session.clone(),
+    ));
+    let devices_task = task::spawn(devices::simulator(devices_session.clone(), 50, 50));
     let (metrics_result, devices_result) = try_join!(metrics_task, devices_task)?;
 
     metrics_result?;
