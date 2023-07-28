@@ -67,7 +67,7 @@ pub async fn writer(session: Arc<Session>) -> Result<models::Metric, anyhow::Err
     }
 }
 
-pub async fn worker(session: Arc<Session>) {
+pub async fn worker(session: Arc<Session>) -> Result<(), anyhow::Error> {
     let mut interval = tokio::time::interval(Duration::from_secs(1));
     loop {
         interval.tick().await;

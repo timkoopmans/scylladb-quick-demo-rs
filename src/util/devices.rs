@@ -5,7 +5,7 @@ use scylla::transport::session::Session;
 use scylla::IntoTypedRows;
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{debug, error, info};
+use tracing::{debug, error};
 use uuid::Uuid;
 
 pub async fn simulator(
@@ -51,7 +51,7 @@ pub async fn simulator(
         }
         let prepared_batch: Batch = session.prepare_batch(&batch).await?;
         session.batch(&prepared_batch, batch_values).await?;
-        info!("Batch written successfully!");
+        debug!("Batch written successfully!");
 
         tokio::time::sleep(Duration::from_millis(5)).await;
     }

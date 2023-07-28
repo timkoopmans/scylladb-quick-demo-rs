@@ -4,7 +4,6 @@ mod web;
 
 use crate::db::connection;
 use crate::util::devices;
-use rand::SeedableRng;
 use std::error::Error;
 use std::sync::Arc;
 use tokio::{task, try_join};
@@ -25,9 +24,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let web = server::init(session.clone()).await;
     tokio::spawn(async { web.launch().await.unwrap() });
 
-    let metrics = task::spawn(metrics::worker(session.clone()));
-    let devices = task::spawn(devices::simulator(session.clone(), 0, 100));
-    try_join!(metrics, devices)?;
+    let metrics_task = task::spawn(metrics::worker(session.clone()));
+    let devices_task = task::spawn(devices::simulator(session.clone(), 80, 20));
+    let (metrics_result, devices_result) = try_join!(metrics_task, devices_task)?;
+
+    metrics_result?;
+    devices_result?;
 
     Ok(())
 }
