@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 pub async fn init(session: Arc<Session>, opt: Opt) -> Rocket<Build> {
     rocket::build()
-        .mount("/", routes![index, metrics])
+        .mount("/", routes![index, metrics, devices])
         .mount("/", FileServer::from(relative!("public/")))
         .manage(session)
         .manage(opt)

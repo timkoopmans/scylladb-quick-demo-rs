@@ -4,12 +4,13 @@ use rocket::fs::NamedFile;
 use rocket::http::Status;
 use rocket::response::status;
 use rocket::serde::json::Json;
+use rocket::serde::Serialize;
 use rocket::{get, State};
 use scylla::query::Query;
-use scylla::{IntoTypedRows, Session};
-use serde::Serialize;
+use scylla::{FromRow, IntoTypedRows, Session};
 use std::path::Path;
 use std::sync::Arc;
+use uuid::Uuid;
 
 #[get("/")]
 pub async fn index() -> Option<NamedFile> {
@@ -86,4 +87,29 @@ pub struct RateMetric {
     pub total_queries_iter: i64,
     pub total_errors: i64,
     pub total_errors_iter: i64,
+}
+
+#[get("/devices", rank = 2)]
+pub async fn devices(
+    session: &State<Arc<Session>>,
+) -> Result<Json<Vec<Device>>, status::Custom<String>> {
+    let cql_query = Query::new("SELECT * FROM devices;");
+
+    let rows = session
+        .query(cql_query, ())
+        .await
+        .map_err(|err| status::Custom(Status::InternalServerError, err.to_string()))?
+        .rows
+        .unwrap_or_default();
+
+    let devices: Vec<Device> = rows.into_typed().filter_map(Result::ok).collect();
+
+    Ok(Json(devices))
+}
+
+#[derive(Clone, Debug, FromRow, Serialize)]
+pub struct Device {
+    pub uuid: Uuid,
+    pub timestamp: i64,
+    pub sensor_data: i64,
 }
