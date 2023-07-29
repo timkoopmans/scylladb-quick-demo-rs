@@ -1,4 +1,5 @@
 let chartInstances = {};
+let devicesData = [];
 
 window.onload = async () => {
     mdc.autoInit();
@@ -6,8 +7,8 @@ window.onload = async () => {
     chartInstances = initCharts();
     await updateCharts(chartInstances);
 
-    // Refresh every 3 seconds
-    setInterval(() => updateCharts(chartInstances), 3000);
+    // Refresh every 5 seconds
+    setInterval(() => updateCharts(chartInstances), 5000);
 };
 
 window.addEventListener('resize', function() {
@@ -15,6 +16,7 @@ window.addEventListener('resize', function() {
     if(chartInstances.writesPerSecChart) chartInstances.writesPerSecChart.resize();
     if(chartInstances.latencyMeanMsChart) chartInstances.latencyMeanMsChart.resize();
     if(chartInstances.latencyP99MsChart) chartInstances.latencyP99MsChart.resize();
+    if(chartInstances.sensorDataGraph) chartInstances.sensorDataGraph.resize();
 });
 
 let metricsData = {
@@ -58,24 +60,26 @@ async function fetchAndPrepareData() {
                 document.getElementById('latencyP99Ms').innerText = item.latency_p99_ms.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
         });
+
+        devicesData = await fetchDevicesData();
     } catch (error) {
         console.error('Error fetching metrics:', error);
     }
 }
-
-
 
 function initCharts() {
     const readsPerSecChart = echarts.init(document.getElementById('readsPerSecChart'));
     const writesPerSecChart = echarts.init(document.getElementById('writesPerSecChart'));
     const latencyMeanMsChart = echarts.init(document.getElementById('latencyMeanMsChart'));
     const latencyP99MsChart = echarts.init(document.getElementById('latencyP99MsChart'));
+    const sensorDataGraph = echarts.init(document.getElementById('sensorDataGraph')); // Add this line
 
     return {
         readsPerSecChart,
         writesPerSecChart,
         latencyMeanMsChart,
-        latencyP99MsChart
+        latencyP99MsChart,
+        sensorDataGraph
     };
 }
 
@@ -96,6 +100,7 @@ async function updateCharts(chartInstances) {
     chartInstances.writesPerSecChart.setOption(createChartOption(metricsData.writesPerSec, gradients.writesPerSec), true);
     chartInstances.latencyMeanMsChart.setOption(createChartOption(metricsData.latencyMeanMs, gradients.latencyMeanMs), true);
     chartInstances.latencyP99MsChart.setOption(createChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
+    chartInstances.sensorDataGraph.setOption(createGraphOption(), true);
 }
 
 function createChartOption(data, gradientColors) {
@@ -121,4 +126,69 @@ function createChartOption(data, gradientColors) {
             }
         }]
     };
+}
+
+function createGraphOption() {
+    const graphData = devicesData.map(device => {
+         return {
+            name: device.ipv4,
+            symbolSize: device.sensor_data,
+            itemStyle: {
+                color: getNodeColor(device.sensor_data),
+            },
+        };
+    });
+
+    const graphLinks = devicesData.map((device, index) => {
+        return {
+            source: device.ipv4,
+            target: index === 0 ? graphData.length - 1 : index - 1, // Connect to the previous node
+        };
+    });
+
+    return {
+        tooltip: {},
+        series: [
+            {
+                type: 'graph',
+                layout: 'force',
+                animation: false,
+                data: graphData,
+                links: graphLinks,
+                roam: true,
+                force: {
+                    repulsion: 20,
+                    edgeLength: 5,
+                    gravity: 0.1
+                },
+            },
+        ],
+    };
+}
+
+function getNodeColor(sensorData) {
+    // Ensure the sensorData value is within the range of 1 to 25
+    const clampedSensorData = Math.min(25, Math.max(1, sensorData));
+
+    // Scale the sensorData value to be in the range of 0 to 1
+    const scaledSensorData = (clampedSensorData - 1) / 24;
+
+    const color1 = 'rgb(55, 162, 255)';
+    const color2 = 'rgb(116, 21, 219)';
+
+    // Create a linear gradient based on the scaledSensorData value
+    return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        {offset: 0, color: color1},
+        {offset: 1, color: color2},
+    ]);
+}
+
+async function fetchDevicesData() {
+    try {
+        const response = await fetch('/devices');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching devices data:', error);
+        return [];
+    }
 }

@@ -48,6 +48,9 @@ body {
     padding: 0 16px 0 16px;  /* Top, Right, Bottom, Left */
 }
 
+.double-height-chart {
+    height: calc(2 * 16.9rem); /* Double the height of 16.9rem (adjust as needed) */
+}
 
 
 

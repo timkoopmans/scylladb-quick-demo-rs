@@ -56,7 +56,7 @@ pub async fn simulator(
                 } else {
                     Uuid::new_v4()
                 };
-                let sensor_data: i64 = rng.gen_range(20..=25); // Generate random sensor data.
+                let sensor_data: i64 = rng.gen_range(1..=25); // Generate random sensor data.
                 let ipv4: String = IPv4(EN).fake();
 
                 batch.append_statement(

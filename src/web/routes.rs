@@ -97,7 +97,7 @@ pub async fn devices(
     let timestamp_minute_ago = timestamp_now - 60 * 1000;
 
     let cql_query =
-        Query::new("SELECT * FROM devices WHERE timestamp > ? AND timestamp <= ? LIMIT 300;");
+        Query::new("SELECT * FROM devices WHERE timestamp > ? AND timestamp <= ? LIMIT 1000;");
 
     let rows = session
         .query(cql_query, (timestamp_minute_ago, timestamp_now))
