@@ -2,29 +2,66 @@
 <html>
 <head>
     <title>ScyllaDB Quickstart Demo</title>
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body class="mdc-typography">
-<script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 <div class="mdc-layout-grid">
     <div class="mdc-layout-grid__inner">
         <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-            <div id="readsPerSecChart" style="width: 100%; height:400px;"></div>
+            <div class="mdc-card">
+                <div id="readsPerSecChart" class="mdc-card__media mdc-card__media--16-9"></div>
+                <div class="mdc-card__content">
+                    <h2 id="readsPerSec" class="mdc-typography--headline6"></h2>
+                    <p class="mdc-typography--body2">Reads per second</p>
+                </div>
+            </div>
         </div>
         <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-            <div id="writesPerSecChart" style="width: 100%; height:400px;"></div>
+            <div class="mdc-card">
+                <div id="writesPerSecChart" class="mdc-card__media mdc-card__media--16-9"></div>
+                <div class="mdc-card__content">
+                    <h2 id="writesPerSec" class="mdc-typography--headline6"></h2>
+                    <p class="mdc-typography--body2">Writes per second</p>
+                </div>
+            </div>
         </div>
         <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-            <div id="latencyMeanMsChart" style="width: 100%; height:400px;"></div>
+            <div class="mdc-card">
+                <div id="latencyMeanMsChart" class="mdc-card__media mdc-card__media--16-9"></div>
+                <div class="mdc-card__content">
+                    <h2 id="latencyMeanMs" class="mdc-typography--headline6"></h2>
+                    <p class="mdc-typography--body2">Latency mean (ms)</p>
+                </div>
+            </div>
         </div>
         <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-            <div id="latencyP99MsChart" style="width: 100%; height:400px;"></div>
+            <div class="mdc-card">
+                <div id="latencyP99MsChart" class="mdc-card__media mdc-card__media--16-9"></div>
+                <div class="mdc-card__content">
+                    <h2 id="latencyP99Ms" class="mdc-typography--headline6"></h2>
+                    <p class="mdc-typography--body2">Latency P99 (ms)</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
+    <div class="mdc-card">
+        <div id="logDataChart" class="mdc-card__media mdc-card__media--16-9"></div>
+        <div class="mdc-card__content">
+            <h2 class="mdc-typography--headline6" id="logData"></h2>
+            <p class="mdc-typography--body2">Log Data</p>
+        </div>
+    </div>
+</div>
+
+
+
 <script src="main.js"></script>
 </body>
 </html>
