@@ -88,7 +88,7 @@ async function updateCharts(chartInstances) {
         readsPerSec: ['rgb(55, 162, 255)', 'rgb(116, 21, 219)'],
         writesPerSec: ['rgb(255, 191, 0)', 'rgb(224, 62, 76)'],
         latencyMeanMs: ['rgb(128, 255, 165)', 'rgb(1, 191, 236)'],
-        latencyP99Ms: ['rgb(255, 0, 135)', 'rgb(135, 0, 157)']
+        latencyP99Ms: ['rgb(255, 0, 135)', 'rgb(135, 0, 157)'],
     };
 
     // Update chart options
@@ -122,4 +122,3 @@ function createChartOption(data, gradientColors) {
         }]
     };
 }
-

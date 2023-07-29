@@ -1,3 +1,6 @@
+use fake::faker::internet::raw::*;
+use fake::locales::EN;
+use fake::Fake;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use scylla::batch::Batch;
@@ -53,12 +56,19 @@ pub async fn simulator(
                 } else {
                     Uuid::new_v4()
                 };
-                let sensor_data: i64 = rng.gen(); // Generate random sensor data.
+                let sensor_data: i64 = rng.gen_range(20..=25); // Generate random sensor data.
+                let ipv4: String = IPv4(EN).fake();
+
                 batch.append_statement(
-                    "INSERT INTO devices (device_id, timestamp, sensor_data) VALUES (?, ?, ?)",
+                    "INSERT INTO devices (device_id, timestamp, sensor_data, ipv4) VALUES (?, ?, ?, ?)",
                 );
 
-                batch_values.push((uuid, chrono::Utc::now().timestamp_millis(), sensor_data));
+                batch_values.push((
+                    uuid,
+                    chrono::Utc::now().timestamp_millis(),
+                    sensor_data,
+                    ipv4,
+                ));
             }
         }
         let prepared_batch: Batch = session.prepare_batch(&batch).await?;

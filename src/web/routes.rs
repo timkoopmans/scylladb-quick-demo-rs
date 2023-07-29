@@ -93,10 +93,14 @@ pub struct RateMetric {
 pub async fn devices(
     session: &State<Arc<Session>>,
 ) -> Result<Json<Vec<Device>>, status::Custom<String>> {
-    let cql_query = Query::new("SELECT * FROM devices;");
+    let timestamp_now = chrono::Utc::now().timestamp_millis();
+    let timestamp_minute_ago = timestamp_now - 60 * 1000;
+
+    let cql_query =
+        Query::new("SELECT * FROM devices WHERE timestamp > ? AND timestamp <= ? LIMIT 300;");
 
     let rows = session
-        .query(cql_query, ())
+        .query(cql_query, (timestamp_minute_ago, timestamp_now))
         .await
         .map_err(|err| status::Custom(Status::InternalServerError, err.to_string()))?
         .rows
@@ -111,5 +115,6 @@ pub async fn devices(
 pub struct Device {
     pub uuid: Uuid,
     pub timestamp: i64,
+    pub ipv4: String,
     pub sensor_data: i64,
 }
