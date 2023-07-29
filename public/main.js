@@ -26,6 +26,9 @@ let metricsData = {
     latencyP99Ms: []
 };
 
+let totalReads = 0;
+let totalWrites = 0;
+
 async function fetchAndPrepareData() {
     try {
         const response = await fetch('/metrics');
@@ -45,6 +48,10 @@ async function fetchAndPrepareData() {
                 metricsData.latencyMeanMs.unshift([timestamp, item.latency_mean_ms]);
                 metricsData.latencyP99Ms.unshift([timestamp, item.latency_p99_ms]);
 
+                // Calculate total reads and writes
+                totalReads += item.total_reads;
+                totalWrites += item.total_writes;
+
                 // Limit size of arrays to 300
                 if (metricsData.readsPerSec.length > 300) {
                     metricsData.readsPerSec.pop();
@@ -54,10 +61,14 @@ async function fetchAndPrepareData() {
                 }
 
                 // Update the div container with the latest values, formatted with commas and two decimal places
-                document.getElementById('readsPerSec').innerText = item.reads_per_second.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                document.getElementById('writesPerSec').innerText = item.writes_per_second.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                document.getElementById('latencyMeanMs').innerText = item.latency_mean_ms.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                document.getElementById('latencyP99Ms').innerText = item.latency_p99_ms.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                document.getElementById('readsPerSec').innerText = item.reads_per_second.toLocaleString('en', { maximumFractionDigits: 0 }) + " reads/sec";
+                document.getElementById('writesPerSec').innerText = item.writes_per_second.toLocaleString('en', { maximumFractionDigits: 0 }) + " writes/sec";
+                document.getElementById('latencyMeanMs').innerText = item.latency_mean_ms.toLocaleString('en', { maximumFractionDigits: 0 }) + " ms";
+                document.getElementById('latencyP99Ms').innerText = item.latency_p99_ms.toLocaleString('en', { maximumFractionDigits: 0 }) + " ms";
+
+                // Update totalReads and totalWrites in the HTML
+                document.getElementById('totalReads').innerText = totalReads.toLocaleString('en', { maximumFractionDigits: 0 }) + " total reads";
+                document.getElementById('totalWrites').innerText = totalWrites.toLocaleString('en', { maximumFractionDigits: 0 }) + " total writes";
             }
         });
 
@@ -174,7 +185,7 @@ function getNodeColor(sensorData) {
     const scaledSensorData = (clampedSensorData - 1) / 24;
 
     const color1 = 'rgb(55, 162, 255)';
-    const color2 = 'rgb(116, 21, 219)';
+    const color2 = 'rgb(142,218,112)';
 
     // Create a linear gradient based on the scaledSensorData value
     return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
