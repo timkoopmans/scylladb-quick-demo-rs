@@ -37,12 +37,13 @@ async fn main() -> Result<(), anyhow::Error> {
     }
 
     let metrics_session = Arc::new(
-        connection::builder()
+        connection::builder(true)
             .await
             .expect("Failed to connect to database"),
     );
+
     let devices_session = Arc::new(
-        connection::builder()
+        connection::builder(true)
             .await
             .expect("Failed to connect to database"),
     );
