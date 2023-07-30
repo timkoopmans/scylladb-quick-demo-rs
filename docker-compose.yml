@@ -10,14 +10,14 @@ services:
       - "9042:9042"
     restart: always
 
-#  dashboard:
-#    build: .
-#    image: timkoopmans/scylladb-quick-demo
-#    ports:
-#      - 8000:8000
-#    environment:
-#      - DATABASE_URL=scylla:9042
-#      - ROCKET_ADDRESS=0.0.0.0
+  quickstart:
+    build: .
+    image: timkoopmans/scylladb-quickstart
+    ports:
+      - 8000:8000
+    environment:
+      - DATABASE_URL=scylla:9042
+      - ROCKET_ADDRESS=0.0.0.0
 
 volumes:
   scylla_data:
