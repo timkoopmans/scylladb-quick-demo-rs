@@ -1,6 +1,6 @@
 # ScyllaDB Quickstart Demo
 
-This is a quick start demonstation of ScyllaDB with Docker.
+This is a quick start demonstration of ScyllaDB with Docker.
 
 To run the demo for yourself. First start a single node cluster with the following command:
 
