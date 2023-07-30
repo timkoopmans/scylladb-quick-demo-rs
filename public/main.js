@@ -35,7 +35,10 @@ async function fetchAndPrepareData() {
         const data = await response.json();
 
         // Let's find the last timestamp we have in our data
-        const lastTimestamp = metricsData.readsPerSec[0] ? metricsData.readsPerSec[0][0] : 0;
+        let lastTimestamp = 0;
+        if (metricsData.readsPerSec.length > 0) {
+            lastTimestamp = metricsData.readsPerSec[metricsData.readsPerSec.length - 1][0];
+        }
 
         // Now we only add new data points
         data.forEach(item => {
@@ -43,10 +46,10 @@ async function fetchAndPrepareData() {
 
             // If the timestamp of the current item is greater, add new data
             if (timestamp > lastTimestamp) {
-                metricsData.readsPerSec.unshift([timestamp, item.reads_per_second]);
-                metricsData.writesPerSec.unshift([timestamp, item.writes_per_second]);
-                metricsData.latencyMeanMs.unshift([timestamp, item.latency_mean_ms]);
-                metricsData.latencyP99Ms.unshift([timestamp, item.latency_p99_ms]);
+                metricsData.readsPerSec.push([timestamp, item.reads_per_second]);
+                metricsData.writesPerSec.push([timestamp, item.writes_per_second]);
+                metricsData.latencyMeanMs.push([timestamp, item.latency_mean_ms]);
+                metricsData.latencyP99Ms.push([timestamp, item.latency_p99_ms]);
 
                 // Calculate total reads and writes
                 totalReads += item.total_reads;
@@ -54,10 +57,10 @@ async function fetchAndPrepareData() {
 
                 // Limit size of arrays to 300
                 if (metricsData.readsPerSec.length > 300) {
-                    metricsData.readsPerSec.pop();
-                    metricsData.writesPerSec.pop();
-                    metricsData.latencyMeanMs.pop();
-                    metricsData.latencyP99Ms.pop();
+                    metricsData.readsPerSec.shift();
+                    metricsData.writesPerSec.shift();
+                    metricsData.latencyMeanMs.shift();
+                    metricsData.latencyP99Ms.shift();
                 }
 
                 // Update the div container with the latest values, formatted with commas and two decimal places
@@ -100,10 +103,10 @@ async function updateCharts(chartInstances) {
 
     // Define gradient color pairs
     const gradients = {
-        readsPerSec: ['rgb(55, 162, 255)', 'rgb(116, 21, 219)'],
-        writesPerSec: ['rgb(255, 191, 0)', 'rgb(224, 62, 76)'],
-        latencyMeanMs: ['rgb(128, 255, 165)', 'rgb(1, 191, 236)'],
-        latencyP99Ms: ['rgb(255, 0, 135)', 'rgb(135, 0, 157)'],
+        readsPerSec: ['#0D41E1', '#07C8F9'],
+        writesPerSec: ['#ff7b00', '#ffea00'],
+        latencyMeanMs:  ['#2ea2f9', '#c632e6'],
+        latencyP99Ms: ['#2ea2f9', '#c632e6'],
     };
 
     // Update chart options
@@ -113,31 +116,38 @@ async function updateCharts(chartInstances) {
     chartInstances.latencyP99MsChart.setOption(createChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
     chartInstances.sensorDataGraph.setOption(createGraphOption(), true);
 }
-
 function createChartOption(data, gradientColors) {
     return {
         tooltip: { trigger: 'axis' },
-        xAxis: { type: 'time' },
+        xAxis: {
+            type: 'time',
+            splitLine: {
+                show: false
+            }
+        },
         yAxis: { type: 'value' },
         series: [{
             data: data,
             type: 'line',
-            showSymbol: false,
-            hoverAnimation: false,
-            smooth: true,
-            lineStyle: {
-                width: 0
-            },
+            step: 'start',
+            symbol: 'none',
             areaStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                    offset: 0, color: gradientColors[0] // top color
-                }, {
-                    offset: 1, color: gradientColors[1] // bottom color
-                }])
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: gradientColors[0] },
+                    { offset: 1, color: gradientColors[1] }
+                ])
+            },
+            lineStyle: {
+                opacity: 0
+            },
+            itemStyle: {
+                color: gradientColors[0]
             }
         }]
     };
 }
+
+
 
 function createGraphOption() {
     const graphData = devicesData.map(device => {
