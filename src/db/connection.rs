@@ -2,6 +2,7 @@ use crate::db::ddl::DDL;
 use anyhow::{anyhow, Result};
 use scylla::{Session, SessionBuilder};
 use std::env;
+use tokio_retry::{strategy::FixedInterval, Retry};
 use tracing::info;
 
 pub async fn builder(migrate: bool) -> Result<Session> {
@@ -9,10 +10,16 @@ pub async fn builder(migrate: bool) -> Result<Session> {
 
     info!("Connecting to ScyllaDB at {}", database_url);
 
-    let session = SessionBuilder::new()
-        .known_node(&database_url)
-        .build()
-        .await?;
+    let strategy = FixedInterval::from_millis(5000).take(12);
+
+    let session = Retry::spawn(strategy, || async {
+        SessionBuilder::new()
+            .known_node(&database_url)
+            .build()
+            .await
+    })
+    .await
+    .map_err(|e| anyhow!("Error connecting to the database: {}", e))?;
 
     if migrate {
         let schema_query = DDL.trim().replace('\n', " ");
