@@ -59,3 +59,9 @@ body {
 .panel.active {
     display: block;
 }
+
+.scrollable-table {
+    max-height: 320px;
+    overflow-y: auto;
+    display: block;
+}

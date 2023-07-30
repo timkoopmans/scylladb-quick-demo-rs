@@ -86,16 +86,38 @@
             <div class="mdc-layout-grid__inner">
                 <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
                     <div class="mdc-card">
+                        <div id="deviceTable" class="mdc-data-table mdc-card__content">
+                            <div class="mdc-data-table__table-container scrollable-table">
+                                <table class="mdc-data-table__table">
+                                    <thead>
+                                    <tr class="mdc-data-table__header-row">
+                                        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Device IPv4</th>
+                                        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Device UUID</th>
+                                        <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Sensor Data</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="mdc-data-table__content"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mdc-layout-grid__inner">
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
+                    <div class="mdc-card">
                         <div id="sensorDataGraph" class="mdc-card__media mdc-card__media--16-9 double-height-chart"></div>
                         <div class="mdc-card__content">
                             <h2 id="sensorDataGraphTitle" class="mdc-typography--headline6"></h2>
-                            <p class="mdc-typography--body2">Live Sensor Data Graph (last 1000 IP addresses)</p>
+                            <p class="mdc-typography--body2">Devices Graph</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 
 <script src="main.js"></script>

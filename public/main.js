@@ -83,8 +83,9 @@ async function fetchAndPrepareData() {
         });
 
         devicesData = await fetchDevicesData();
+        populateDeviceTable();
     } catch (error) {
-        console.error('Error fetching metrics:', error);
+        console.error('Error fetching data:', error);
     }
 }
 
@@ -215,4 +216,34 @@ async function fetchDevicesData() {
         console.error('Error fetching devices data:', error);
         return [];
     }
+}
+
+function populateDeviceTable() {
+    const tableBody = document.querySelector('#deviceTable .mdc-data-table__content');
+    tableBody.innerHTML = '';  // Clear the existing content
+
+    devicesData.forEach(device => {
+        const row = document.createElement('tr');
+        row.className = 'mdc-data-table__row';
+
+        const cellIp = document.createElement('td');
+        cellIp.className = 'mdc-data-table__cell';
+        cellIp.innerText = device.ipv4;
+        row.appendChild(cellIp);
+
+        const cellUuid = document.createElement('td');
+        cellUuid.className = 'mdc-data-table__cell';
+        cellUuid.innerText = device.uuid;
+        row.appendChild(cellUuid);
+
+        const cellSensorData = document.createElement('td');
+        cellSensorData.className = 'mdc-data-table__cell';
+        cellSensorData.innerText = device.sensor_data;
+        row.appendChild(cellSensorData);
+
+        tableBody.appendChild(row);
+    });
+
+    // Initialize the MDC DataTable
+    const dataTable = new mdc.dataTable.MDCDataTable(document.querySelector('#deviceTable'));
 }
