@@ -2,7 +2,9 @@ use crate::db::ddl::DDL;
 use anyhow::{anyhow, Result};
 use scylla::{Session, SessionBuilder};
 use std::env;
-use tokio_retry::{strategy::FixedInterval, Retry};
+use std::time::Duration;
+use tokio_retry::{strategy::ExponentialBackoff, Retry};
+
 use tracing::info;
 
 pub async fn builder(migrate: bool) -> Result<Session> {
@@ -10,7 +12,7 @@ pub async fn builder(migrate: bool) -> Result<Session> {
 
     info!("Connecting to ScyllaDB at {}", database_url);
 
-    let strategy = FixedInterval::from_millis(5000).take(12);
+    let strategy = ExponentialBackoff::from_millis(500).max_delay(Duration::from_secs(20));
 
     let session = Retry::spawn(strategy, || async {
         SessionBuilder::new()
