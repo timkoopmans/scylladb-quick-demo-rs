@@ -19,7 +19,7 @@ measuring sensor data from millions of unique devices:
         --env ROCKET_ADDRESS=0.0.0.0 \
         --name demo timkoopmans/scylladb-quickstart
 
-The demo application will now be running on port 8000. You can access the application by visiting http://localhost:8000.
+The demo application will now be running on port 8000. You can access the application by visiting http://localhost:8000/index.html.
 
 ![demo.gif](demo.gif)
 
