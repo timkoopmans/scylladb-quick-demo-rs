@@ -6,6 +6,10 @@ To run the demo for yourself. First start a single node cluster with the followi
 
     docker run -d --rm --name node1 scylladb/scylla
 
+Wait 60s or so for the node to start. Tip: you can view ScyllaDB logs with:
+
+    docker logs -f node1
+
 Next, run the demonstration application which will simulate artificial load from an internet of things app, 
 measuring sensor data from millions of unique devices:
 
@@ -15,4 +19,10 @@ measuring sensor data from millions of unique devices:
         --env ROCKET_ADDRESS=0.0.0.0 \
         --name demo timkoopmans/scylladb-quickstart
 
-![img.png](img.png)
+The demo application will now be running on port 8000. You can access the application by visiting http://localhost:8000.
+
+![demo.gif](demo.gif)
+
+Once you're happy with the demo, you can stop the containers with:
+
+    docker stop node1 demo
