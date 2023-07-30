@@ -22,7 +22,7 @@ down:
 	docker-compose -f docker-compose.yml down --remove-orphans
 
 run:
-	cargo run -p scylladb-quick-demo-rs eth usdt
+	cargo run -p scylladb-quick-demo-rs 20 80
 
 apply:
 	cd infra

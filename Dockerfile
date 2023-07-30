@@ -14,7 +14,6 @@ RUN cargo build --release --bin scylladb-quick-demo-rs
 
 FROM gcr.io/distroless/cc
 COPY --from=builder /app/target/release/scylladb-quick-demo-rs /app/scylladb-quick-demo-rs
-COPY --from=builder /app/migrations /app/migrations
 COPY --from=builder /app/public /app/public
 
 CMD ["/app/scylladb-quick-demo-rs"]
