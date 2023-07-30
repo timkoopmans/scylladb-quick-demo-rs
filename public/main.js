@@ -5,7 +5,7 @@ let activeTabIndex = 0;
 window.onload = async () => {
     mdc.autoInit();
 
-    mdc.tabBar.MDCTabBar.attachTo(document.querySelector('.mdc-tab-bar')).listen('MDCTabBar:activated', function(event) {
+    mdc.tabBar.MDCTabBar.attachTo(document.querySelector('.mdc-tab-bar')).listen('MDCTabBar:activated', function (event) {
         document.querySelector('.panel.active').classList.remove('active');
         document.querySelector('#panel-container .panel:nth-child(' + (event.detail.index + 1) + ')').classList.add('active');
         activeTabIndex = event.detail.index;  // Update the active tab index
@@ -23,19 +23,16 @@ window.onload = async () => {
     setInterval(() => updateCharts(chartInstances), 5000);
 };
 
-window.addEventListener('resize', function() {
-    if(chartInstances.readsPerSecChart) chartInstances.readsPerSecChart.resize();
-    if(chartInstances.writesPerSecChart) chartInstances.writesPerSecChart.resize();
-    if(chartInstances.latencyMeanMsChart) chartInstances.latencyMeanMsChart.resize();
-    if(chartInstances.latencyP99MsChart) chartInstances.latencyP99MsChart.resize();
-    if(chartInstances.sensorDataGraph) chartInstances.sensorDataGraph.resize();
+window.addEventListener('resize', function () {
+    if (chartInstances.readsPerSecChart) chartInstances.readsPerSecChart.resize();
+    if (chartInstances.writesPerSecChart) chartInstances.writesPerSecChart.resize();
+    if (chartInstances.latencyMeanMsChart) chartInstances.latencyMeanMsChart.resize();
+    if (chartInstances.latencyP99MsChart) chartInstances.latencyP99MsChart.resize();
+    if (chartInstances.sensorDataGraph) chartInstances.sensorDataGraph.resize();
 });
 
 let metricsData = {
-    readsPerSec: [],
-    writesPerSec: [],
-    latencyMeanMs: [],
-    latencyP99Ms: []
+    readsPerSec: [], writesPerSec: [], latencyMeanMs: [], latencyP99Ms: []
 };
 
 let totalReads = 0;
@@ -72,13 +69,13 @@ async function fetchAndPrepareData() {
                     metricsData.latencyP99Ms.shift();
                 }
 
-                document.getElementById('readsPerSec').innerText = item.reads_per_second.toLocaleString('en', { maximumFractionDigits: 0 }) + " reads/sec";
-                document.getElementById('writesPerSec').innerText = item.writes_per_second.toLocaleString('en', { maximumFractionDigits: 0 }) + " writes/sec";
-                document.getElementById('latencyMeanMs').innerText = item.latency_mean_ms.toLocaleString('en', { maximumFractionDigits: 0 }) + " ms";
-                document.getElementById('latencyP99Ms').innerText = item.latency_p99_ms.toLocaleString('en', { maximumFractionDigits: 0 }) + " ms";
+                document.getElementById('readsPerSec').innerText = item.reads_per_second.toLocaleString('en', {maximumFractionDigits: 0}) + " reads/sec";
+                document.getElementById('writesPerSec').innerText = item.writes_per_second.toLocaleString('en', {maximumFractionDigits: 0}) + " writes/sec";
+                document.getElementById('latencyMeanMs').innerText = item.latency_mean_ms.toLocaleString('en', {maximumFractionDigits: 0}) + " ms";
+                document.getElementById('latencyP99Ms').innerText = item.latency_p99_ms.toLocaleString('en', {maximumFractionDigits: 0}) + " ms";
 
-                document.getElementById('totalReads').innerText = totalReads.toLocaleString('en', { maximumFractionDigits: 0 }) + " total reads";
-                document.getElementById('totalWrites').innerText = totalWrites.toLocaleString('en', { maximumFractionDigits: 0 }) + " total writes";
+                document.getElementById('totalReads').innerText = totalReads.toLocaleString('en', {maximumFractionDigits: 0}) + " total reads";
+                document.getElementById('totalWrites').innerText = totalWrites.toLocaleString('en', {maximumFractionDigits: 0}) + " total writes";
             }
         });
 
@@ -97,11 +94,7 @@ function initCharts() {
     const sensorDataGraph = echarts.init(document.getElementById('sensorDataGraph')); // Add this line
 
     return {
-        readsPerSecChart,
-        writesPerSecChart,
-        latencyMeanMsChart,
-        latencyP99MsChart,
-        sensorDataGraph
+        readsPerSecChart, writesPerSecChart, latencyMeanMsChart, latencyP99MsChart, sensorDataGraph
     };
 }
 
@@ -111,7 +104,7 @@ async function updateCharts(chartInstances) {
     const gradients = {
         readsPerSec: ['#0D41E1', '#07C8F9'],
         writesPerSec: ['#ff7b00', '#ffea00'],
-        latencyMeanMs:  ['#2ea2f9', '#c632e6'],
+        latencyMeanMs: ['#2ea2f9', '#c632e6'],
         latencyP99Ms: ['#2ea2f9', '#c632e6'],
     };
 
@@ -124,89 +117,128 @@ async function updateCharts(chartInstances) {
         chartInstances.sensorDataGraph.setOption(createGraphOption(), true);
     }
 }
+
 function createChartOption(data, gradientColors) {
     return {
-        tooltip: { trigger: 'axis' },
-        xAxis: {
-            type: 'time',
-            splitLine: {
+        tooltip: {trigger: 'axis'}, xAxis: {
+            type: 'time', splitLine: {
                 show: false
             }
-        },
-        yAxis: { type: 'value' },
-        series: [{
-            data: data,
-            type: 'line',
-            step: 'start',
-            symbol: 'none',
-            areaStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    { offset: 0, color: gradientColors[0] },
-                    { offset: 1, color: gradientColors[1] }
-                ])
-            },
-            lineStyle: {
+        }, yAxis: {type: 'value'}, series: [{
+            data: data, type: 'line', step: 'start', symbol: 'none', areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                    offset: 0,
+                    color: gradientColors[0]
+                }, {offset: 1, color: gradientColors[1]}])
+            }, lineStyle: {
                 opacity: 0
-            },
-            itemStyle: {
+            }, itemStyle: {
                 color: gradientColors[0]
             }
         }]
     };
 }
 
-
+function getIpClass(ipv4) {
+    const firstOctet = parseInt(ipv4.split('.')[0]);
+    if (firstOctet >= 1 && firstOctet <= 126) {
+        return 'A';
+    } else if (firstOctet === 127) {
+        return 'Loopback';
+    } else if (firstOctet >= 128 && firstOctet <= 191) {
+        return 'B';
+    } else if (firstOctet >= 192 && firstOctet <= 223) {
+        return 'C';
+    } else if (firstOctet >= 224 && firstOctet <= 239) {
+        return 'D';
+    } else if (firstOctet >= 240 && firstOctet <= 255) {
+        return 'E';
+    } else {
+        return 'Other';
+    }
+}
 
 function createGraphOption() {
     const graphData = devicesData.map(device => {
-         return {
-            name: device.ipv4,
-            symbolSize: device.sensor_data,
-            itemStyle: {
-                color: getNodeColor(device.sensor_data),
-            },
+        return {
+            name: device.ipv4, symbolSize: device.sensor_data, itemStyle: {
+                color: getNodeColor(device),
+            }, class: getIpClass(device.ipv4),
         };
     });
 
-    const graphLinks = devicesData.map((device, index) => {
-        return {
-            source: device.ipv4,
-            target: index === 0 ? graphData.length - 1 : index - 1, // Connect to the previous node
-        };
+    const graphLinks = [];
+    const ipClassToIndexMap = {};
+    graphData.forEach((node, index) => {
+        if (ipClassToIndexMap[node.class] !== undefined) {
+            graphLinks.push({
+                source: ipClassToIndexMap[node.class], target: index,
+            });
+        }
+        ipClassToIndexMap[node.class] = index;
     });
 
     return {
-        tooltip: {},
-        series: [
-            {
-                type: 'graph',
-                layout: 'force',
-                animation: false,
-                data: graphData,
-                links: graphLinks,
-                roam: true,
-                force: {
-                    repulsion: 20,
-                    edgeLength: 5,
-                    gravity: 0.1
-                },
+        tooltip: {}, series: [{
+            type: 'graph',
+            layout: 'force',
+            animation: false,
+            draggable: false,
+            data: graphData,
+            links: graphLinks,
+            roam: true,
+            force: {
+                repulsion: 20, edgeLength: 5, gravity: 0.1
             },
-        ],
+            lineStyle: {
+                color: 'source',
+            }
+        },],
     };
 }
 
-function getNodeColor(sensorData) {
-    const clampedSensorData = Math.min(25, Math.max(1, sensorData));
-    const scaledSensorData = (clampedSensorData - 1) / 24;
+function getNodeColor(device) {
+    const ipClass = getIpClass(device.ipv4);
 
-    const color1 = 'rgb(55, 162, 255)';
-    const color2 = 'rgb(142,218,112)';
-
-    return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-        {offset: 0, color: color1},
-        {offset: 1, color: color2},
-    ]);
+    switch (ipClass) {
+        case 'A':
+            return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgb(255, 99, 132)'}, {
+                offset: 1,
+                color: 'rgb(255, 159, 64)'
+            },]);
+        case 'B':
+            return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgb(75, 192, 192)'}, {
+                offset: 1,
+                color: 'rgb(153, 102, 255)'
+            },]);
+        case 'C':
+            return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgb(255, 206, 86)'}, {
+                offset: 1,
+                color: 'rgb(255, 159, 64)'
+            },]);
+        case 'D':
+            return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgb(153, 102, 255)'}, {
+                offset: 1,
+                color: 'rgb(75, 192, 192)'
+            },]);
+        case 'E':
+            return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgb(255, 159, 64)'}, {
+                offset: 1,
+                color: 'rgb(255, 99, 132)'
+            },]);
+        case 'Loopback':
+            return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgb(0, 0, 0)'}, {
+                offset: 1,
+                color: 'rgb(255, 255, 255)'
+            },]);
+        default:
+            return new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgb(255, 255, 255)'}, {
+                offset: 1,
+                color: 'rgb(0, 0, 0)'
+            },]);
+    }
 }
+
 
 async function fetchDevicesData() {
     try {
@@ -244,6 +276,5 @@ function populateDeviceTable() {
         tableBody.appendChild(row);
     });
 
-    // Initialize the MDC DataTable
     const dataTable = new mdc.dataTable.MDCDataTable(document.querySelector('#deviceTable'));
 }
