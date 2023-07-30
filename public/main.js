@@ -1,13 +1,25 @@
 let chartInstances = {};
 let devicesData = [];
+let activeTabIndex = 0;
 
 window.onload = async () => {
     mdc.autoInit();
 
+    mdc.tabBar.MDCTabBar.attachTo(document.querySelector('.mdc-tab-bar')).listen('MDCTabBar:activated', function(event) {
+        document.querySelector('.panel.active').classList.remove('active');
+        document.querySelector('#panel-container .panel:nth-child(' + (event.detail.index + 1) + ')').classList.add('active');
+        activeTabIndex = event.detail.index;  // Update the active tab index
+
+        if (activeTabIndex === 1 && chartInstances.sensorDataGraph) {
+            chartInstances.sensorDataGraph.resize();
+            chartInstances.sensorDataGraph.setOption(createGraphOption(), true);
+        }
+    });
+
+
     chartInstances = initCharts();
     await updateCharts(chartInstances);
 
-    // Refresh every 5 seconds
     setInterval(() => updateCharts(chartInstances), 5000);
 };
 
@@ -44,18 +56,15 @@ async function fetchAndPrepareData() {
         data.forEach(item => {
             const timestamp = item.timestamp;
 
-            // If the timestamp of the current item is greater, add new data
             if (timestamp > lastTimestamp) {
                 metricsData.readsPerSec.push([timestamp, item.reads_per_second]);
                 metricsData.writesPerSec.push([timestamp, item.writes_per_second]);
                 metricsData.latencyMeanMs.push([timestamp, item.latency_mean_ms]);
                 metricsData.latencyP99Ms.push([timestamp, item.latency_p99_ms]);
 
-                // Calculate total reads and writes
                 totalReads += item.total_reads;
                 totalWrites += item.total_writes;
 
-                // Limit size of arrays to 300
                 if (metricsData.readsPerSec.length > 300) {
                     metricsData.readsPerSec.shift();
                     metricsData.writesPerSec.shift();
@@ -63,13 +72,11 @@ async function fetchAndPrepareData() {
                     metricsData.latencyP99Ms.shift();
                 }
 
-                // Update the div container with the latest values, formatted with commas and two decimal places
                 document.getElementById('readsPerSec').innerText = item.reads_per_second.toLocaleString('en', { maximumFractionDigits: 0 }) + " reads/sec";
                 document.getElementById('writesPerSec').innerText = item.writes_per_second.toLocaleString('en', { maximumFractionDigits: 0 }) + " writes/sec";
                 document.getElementById('latencyMeanMs').innerText = item.latency_mean_ms.toLocaleString('en', { maximumFractionDigits: 0 }) + " ms";
                 document.getElementById('latencyP99Ms').innerText = item.latency_p99_ms.toLocaleString('en', { maximumFractionDigits: 0 }) + " ms";
 
-                // Update totalReads and totalWrites in the HTML
                 document.getElementById('totalReads').innerText = totalReads.toLocaleString('en', { maximumFractionDigits: 0 }) + " total reads";
                 document.getElementById('totalWrites').innerText = totalWrites.toLocaleString('en', { maximumFractionDigits: 0 }) + " total writes";
             }
@@ -98,10 +105,8 @@ function initCharts() {
 }
 
 async function updateCharts(chartInstances) {
-    // Fetch and prepare data
     await fetchAndPrepareData();
 
-    // Define gradient color pairs
     const gradients = {
         readsPerSec: ['#0D41E1', '#07C8F9'],
         writesPerSec: ['#ff7b00', '#ffea00'],
@@ -109,12 +114,14 @@ async function updateCharts(chartInstances) {
         latencyP99Ms: ['#2ea2f9', '#c632e6'],
     };
 
-    // Update chart options
     chartInstances.readsPerSecChart.setOption(createChartOption(metricsData.readsPerSec, gradients.readsPerSec), true);
     chartInstances.writesPerSecChart.setOption(createChartOption(metricsData.writesPerSec, gradients.writesPerSec), true);
     chartInstances.latencyMeanMsChart.setOption(createChartOption(metricsData.latencyMeanMs, gradients.latencyMeanMs), true);
     chartInstances.latencyP99MsChart.setOption(createChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
-    chartInstances.sensorDataGraph.setOption(createGraphOption(), true);
+
+    if (activeTabIndex === 1 && chartInstances.sensorDataGraph) {
+        chartInstances.sensorDataGraph.setOption(createGraphOption(), true);
+    }
 }
 function createChartOption(data, gradientColors) {
     return {
@@ -188,16 +195,12 @@ function createGraphOption() {
 }
 
 function getNodeColor(sensorData) {
-    // Ensure the sensorData value is within the range of 1 to 25
     const clampedSensorData = Math.min(25, Math.max(1, sensorData));
-
-    // Scale the sensorData value to be in the range of 0 to 1
     const scaledSensorData = (clampedSensorData - 1) / 24;
 
     const color1 = 'rgb(55, 162, 255)';
     const color2 = 'rgb(142,218,112)';
 
-    // Create a linear gradient based on the scaledSensorData value
     return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
         {offset: 0, color: color1},
         {offset: 1, color: color2},

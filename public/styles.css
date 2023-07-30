@@ -52,5 +52,10 @@ body {
     height: calc(2 * 16.9rem); /* Double the height of 16.9rem (adjust as needed) */
 }
 
+.panel {
+    display: none;
+}
 
-
+.panel.active {
+    display: block;
+}

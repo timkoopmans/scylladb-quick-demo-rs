@@ -10,57 +10,93 @@
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body class="mdc-typography">
-<div class="mdc-layout-grid">
-    <div class="mdc-layout-grid__inner">
-        <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-            <div class="mdc-card">
-                <div id="readsPerSecChart" class="mdc-card__media mdc-card__media--16-9"></div>
-                <div class="mdc-card__content">
-                    <h2 id="readsPerSec" class="mdc-typography--headline6"></h2>
-                    <p id="totalReads" class="mdc-typography--body2">Reads</p>
-                </div>
-            </div>
-        </div>
-        <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-            <div class="mdc-card">
-                <div id="writesPerSecChart" class="mdc-card__media mdc-card__media--16-9"></div>
-                <div class="mdc-card__content">
-                    <h2 id="writesPerSec" class="mdc-typography--headline6"></h2>
-                    <p id="totalWrites" class="mdc-typography--body2">Writes</p>
-                </div>
-            </div>
-        </div>
-        <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-            <div class="mdc-card">
-                <div id="latencyMeanMsChart" class="mdc-card__media mdc-card__media--16-9"></div>
-                <div class="mdc-card__content">
-                    <h2 id="latencyMeanMs" class="mdc-typography--headline6"></h2>
-                    <p class="mdc-typography--body2">Latency mean (ms)</p>
-                </div>
-            </div>
-        </div>
-        <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
-            <div class="mdc-card">
-                <div id="latencyP99MsChart" class="mdc-card__media mdc-card__media--16-9"></div>
-                <div class="mdc-card__content">
-                    <h2 id="latencyP99Ms" class="mdc-typography--headline6"></h2>
-                    <p class="mdc-typography--body2">Latency P99 (ms)</p>
-                </div>
-            </div>
-        </div>
 
-        <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
-            <div class="mdc-card">
-                <div id="sensorDataGraph" class="mdc-card__media mdc-card__media--16-9 double-height-chart"></div>
-                <div class="mdc-card__content">
-                    <h2 id="sensorDataGraphTitle" class="mdc-typography--headline6"></h2>
-                    <p class="mdc-typography--body2">Live Sensor Data Graph (last 1000 IP addresses)</p>
-                </div>
+<div class="mdc-tab-bar" role="tablist">
+    <div class="mdc-tab-scroller">
+        <div class="mdc-tab-scroller__scroll-area">
+            <div class="mdc-tab-scroller__scroll-content">
+                <button class="mdc-tab mdc-tab--active" role="tab" aria-selected="true" tabindex="0">
+          <span class="mdc-tab__content">
+            <span class="mdc-tab__text-label">Monitoring</span>
+          </span>
+                    <span class="mdc-tab-indicator mdc-tab-indicator--active">
+            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+          </span>
+                    <span class="mdc-tab__ripple"></span>
+                </button>
+                <button class="mdc-tab" role="tab" aria-selected="false" tabindex="-1">
+          <span class="mdc-tab__content">
+            <span class="mdc-tab__text-label">Sensor Data</span>
+          </span>
+                    <span class="mdc-tab-indicator">
+            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+          </span>
+                    <span class="mdc-tab__ripple"></span>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<div id="panel-container">
+    <div id="monitoring-panel" class="panel active">
+        <div class="mdc-layout-grid">
+            <div class="mdc-layout-grid__inner">
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
+                    <div class="mdc-card">
+                        <div id="readsPerSecChart" class="mdc-card__media mdc-card__media--16-9"></div>
+                        <div class="mdc-card__content">
+                            <h2 id="readsPerSec" class="mdc-typography--headline6"></h2>
+                            <p id="totalReads" class="mdc-typography--body2">Reads</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
+                    <div class="mdc-card">
+                        <div id="writesPerSecChart" class="mdc-card__media mdc-card__media--16-9"></div>
+                        <div class="mdc-card__content">
+                            <h2 id="writesPerSec" class="mdc-typography--headline6"></h2>
+                            <p id="totalWrites" class="mdc-typography--body2">Writes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
+                    <div class="mdc-card">
+                        <div id="latencyMeanMsChart" class="mdc-card__media mdc-card__media--16-9"></div>
+                        <div class="mdc-card__content">
+                            <h2 id="latencyMeanMs" class="mdc-typography--headline6"></h2>
+                            <p class="mdc-typography--body2">Latency mean (ms)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
+                    <div class="mdc-card">
+                        <div id="latencyP99MsChart" class="mdc-card__media mdc-card__media--16-9"></div>
+                        <div class="mdc-card__content">
+                            <h2 id="latencyP99Ms" class="mdc-typography--headline6"></h2>
+                            <p class="mdc-typography--body2">Latency P99 (ms)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="sensorData-panel" class="panel">
+        <div class="mdc-layout-grid">
+            <div class="mdc-layout-grid__inner">
+                <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-12">
+                    <div class="mdc-card">
+                        <div id="sensorDataGraph" class="mdc-card__media mdc-card__media--16-9 double-height-chart"></div>
+                        <div class="mdc-card__content">
+                            <h2 id="sensorDataGraphTitle" class="mdc-typography--headline6"></h2>
+                            <p class="mdc-typography--body2">Live Sensor Data Graph (last 1000 IP addresses)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="main.js"></script>
 </body>
