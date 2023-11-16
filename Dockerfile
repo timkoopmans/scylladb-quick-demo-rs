@@ -1,4 +1,4 @@
-FROM rust:1.68.2 as chef
+FROM rust:1.72.1 as chef
 WORKDIR app
 RUN cargo install cargo-chef
 
@@ -12,7 +12,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN cargo build --release --bin scylladb-quick-demo-rs
 
-FROM gcr.io/distroless/cc
+FROM debian:bookworm-slim AS runtime
 COPY --from=builder /app/target/release/scylladb-quick-demo-rs /app/scylladb-quick-demo-rs
 COPY --from=builder /app/public /app/public
 

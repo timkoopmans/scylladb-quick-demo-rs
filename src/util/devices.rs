@@ -11,6 +11,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use tracing::{debug, error};
 use uuid::Uuid;
+use crate::util::coords;
+
 
 pub async fn simulator(
     session: Arc<Session>,
@@ -59,14 +61,19 @@ pub async fn simulator(
                 let sensor_data: i64 = rng.gen_range(1..=25); // Generate random sensor data.
                 let ipv4: String = IPv4(EN).fake();
 
+                let idx = rng.gen_range(0..=5_000);
+                let lat_long = coords::LATLONGS[idx];
+
                 batch.append_statement(
-                    "INSERT INTO devices (device_id, timestamp, sensor_data, ipv4) VALUES (?, ?, ?, ?)",
+                    "INSERT INTO devices (device_id, timestamp, sensor_data, lat, lng, ipv4) VALUES (?, ?, ?, ?, ?, ?)",
                 );
 
                 batch_values.push((
                     uuid,
                     chrono::Utc::now().timestamp_millis(),
                     sensor_data,
+                    lat_long.0,
+                    lat_long.1,
                     ipv4,
                 ));
             }

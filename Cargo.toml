@@ -35,3 +35,4 @@ rocket = { version = "0.5.0-rc.1", features = ["json"] }
 uuid = { version = "1.4.1", features = ["serde"] }
 rand = "0.8"
 fake = { version = "2.6.1", features = ["geo"] }
+csv = "1.1"

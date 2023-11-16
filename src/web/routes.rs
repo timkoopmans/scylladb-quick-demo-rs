@@ -118,5 +118,7 @@ pub struct Device {
     pub uuid: Uuid,
     pub timestamp: i64,
     pub ipv4: String,
+    pub lat: f64,
+    pub lng: f64,
     pub sensor_data: i64,
 }

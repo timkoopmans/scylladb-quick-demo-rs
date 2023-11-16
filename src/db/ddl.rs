@@ -21,6 +21,8 @@ pub const DDL: &str = "
                                             device_id uuid,
                                             timestamp timestamp,
                                             sensor_data bigint,
+                                            lat double,
+                                            lng double,
                                             ipv4 text,
                                             PRIMARY KEY (device_id, timestamp)
     ) WITH CLUSTERING ORDER BY (timestamp ASC)

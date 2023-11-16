@@ -1,5 +1,6 @@
 let chartInstances = {};
 let devicesData = [];
+let targetData = {};
 let activeTabIndex = 0;
 
 window.onload = async () => {
@@ -14,13 +15,18 @@ window.onload = async () => {
             chartInstances.sensorDataGraph.resize();
             chartInstances.sensorDataGraph.setOption(createGraphOption(), true);
         }
+
+        if (event.detail.index === 2 && chartInstances.worldGraphChart) {
+            chartInstances.worldGraphChart.resize();
+            chartInstances.worldGraphChart.setOption(createWorldOption(), true);
+        }
     });
 
 
     chartInstances = initCharts();
     await updateCharts(chartInstances);
 
-    setInterval(() => updateCharts(chartInstances), 5000);
+    setInterval(() => updateCharts(chartInstances), 15000);
 };
 
 window.addEventListener('resize', function () {
@@ -29,7 +35,9 @@ window.addEventListener('resize', function () {
     if (chartInstances.latencyMeanMsChart) chartInstances.latencyMeanMsChart.resize();
     if (chartInstances.latencyP99MsChart) chartInstances.latencyP99MsChart.resize();
     if (chartInstances.sensorDataGraph) chartInstances.sensorDataGraph.resize();
+    if (chartInstances.worldGraphChart) chartInstances.worldGraphChart.resize();
 });
+
 
 let metricsData = {
     readsPerSec: [], writesPerSec: [], latencyMeanMs: [], latencyP99Ms: []
@@ -91,10 +99,11 @@ function initCharts() {
     const writesPerSecChart = echarts.init(document.getElementById('writesPerSecChart'));
     const latencyMeanMsChart = echarts.init(document.getElementById('latencyMeanMsChart'));
     const latencyP99MsChart = echarts.init(document.getElementById('latencyP99MsChart'));
-    const sensorDataGraph = echarts.init(document.getElementById('sensorDataGraph')); // Add this line
+    const sensorDataGraph = echarts.init(document.getElementById('sensorDataGraph'));
+    const worldGraphChart = echarts.init(document.getElementById('worldGraphChart'));
 
     return {
-        readsPerSecChart, writesPerSecChart, latencyMeanMsChart, latencyP99MsChart, sensorDataGraph
+        readsPerSecChart, writesPerSecChart, latencyMeanMsChart, latencyP99MsChart, sensorDataGraph, worldGraphChart
     };
 }
 
@@ -116,6 +125,77 @@ async function updateCharts(chartInstances) {
     if (activeTabIndex === 1 && chartInstances.sensorDataGraph) {
         chartInstances.sensorDataGraph.setOption(createGraphOption(), true);
     }
+
+    if (activeTabIndex === 2 && chartInstances.worldGraphChart) {
+        chartInstances.worldGraphChart.setOption(createWorldOption(), true);
+        chartInstances.worldGraphChart.resize();
+    }
+}
+
+function createWorldOption() {
+    const graphData = devicesData.map((device, index, array) => {
+        const nextDevice = array[index + 1] || array[0];
+        return [[device.lat, device.lng], [nextDevice.lat, nextDevice.lng]];
+    });
+
+    const opt =  {
+        geo3D: {
+            map: 'world',
+                shading: 'realistic',
+                silent: true,
+                environment: '#333',
+                realisticMaterial: {
+                roughness: 0.8,
+                    metalness: 0
+            },
+            postEffect: {
+                enable: true
+            },
+            groundPlane: {
+                show: false,
+            },
+            light: {
+                main: {
+                    intensity: 1,
+                        alpha: 30
+                },
+                ambient: {
+                    intensity: 0
+                }
+            },
+            viewControl: {
+                distance: 80,
+                    alpha: 90,
+                    panMouseButton: 'left',
+                    rotateMouseButton: 'right'
+            },
+            itemStyle: {
+                color: '#000'
+            },
+            regionHeight: 0.5
+        },
+        series: [
+            {
+                type: 'lines3D',
+                coordinateSystem: 'geo3D',
+                effect: {
+                    show: true,
+                    trailWidth: 1.5,
+                    trailOpacity: 0.25,
+                    trailLength: 0.2,
+                    constantSpeed: 5
+                },
+                blendMode: 'lighter',
+                lineStyle: {
+                    width: 0.2,
+                    opacity: 0.05
+                },
+                data: graphData
+            }
+        ]
+    };
+
+    return opt;
 }
 
 function createChartOption(data, gradientColors) {
@@ -238,7 +318,6 @@ function getNodeColor(device) {
             },]);
     }
 }
-
 
 async function fetchDevicesData() {
     try {

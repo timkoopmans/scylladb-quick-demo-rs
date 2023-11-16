@@ -49,7 +49,11 @@ body {
 }
 
 .double-height-chart {
-    height: calc(2 * 16.9rem); /* Double the height of 16.9rem (adjust as needed) */
+    height: calc(2 * 16.9rem);
+}
+
+.triple-height-chart {
+    height: calc(3 * 16.9rem);
 }
 
 .panel {
