@@ -1,15 +1,19 @@
 body {
     padding: 0;
     margin: 0;
-    background-color: #ccc;
+    background-color: #fff;
     font-family: "GT America Mono", monospace;
     font-size: 14px;
     font-weight: 400;
 }
 
+:root {
+    --mdc-theme-primary: #0077b6;
+    --mdc-theme-secondary: #00BFFF;
+}
 
 .mdc-layout-grid {
-    background-color: #ccc;
+    background-color: #fff;
 }
 
 .mdc-layout-grid__inner {
@@ -28,7 +32,7 @@ body {
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
-    background-color: #f0f0f0;
+    background-color: #fff;
     height: 250px;
 }
 
@@ -38,13 +42,13 @@ body {
 
 .mdc-typography--headline6 {
     padding: 0 16px 0 16px;  /* Top, Right, Bottom, Left */
-    color: #424242;
+    color: #00144b;
 }
 
 .mdc-typography--body2 {
     font-size: 14px;
     font-weight: 400;
-    color: #616161;
+    color: #234294;
     padding: 0 16px 0 16px;  /* Top, Right, Bottom, Left */
 }
 
