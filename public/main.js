@@ -1,22 +1,34 @@
 let chartInstances = {};
 let devicesData = [];
-let targetData = {};
 let activeTabIndex = 0;
-
+const gradients = {
+    readsPerSec: ['#00144B', '#00BFFF'],
+    writesPerSec: ['#00144B', '#00BFFF'],
+    latencyP99Ms: ['#06d6a0', '#9fffcb'],
+};
 window.onload = async () => {
     mdc.autoInit();
 
     mdc.tabBar.MDCTabBar.attachTo(document.querySelector('.mdc-tab-bar')).listen('MDCTabBar:activated', function (event) {
         document.querySelector('.panel.active').classList.remove('active');
         document.querySelector('#panel-container .panel:nth-child(' + (event.detail.index + 1) + ')').classList.add('active');
-        activeTabIndex = event.detail.index;  // Update the active tab index
+        activeTabIndex = event.detail.index;
 
-        if (event.detail.index === 1 && chartInstances.worldGraphChart) {
-            chartInstances.worldGraphChart.resize();
-            chartInstances.worldGraphChart.setOption(createWorldOption(), true);
+        if (event.detail.index === 1) {
+            if (chartInstances.readsPerSecChart) {
+                chartInstances.readsPerSecChart.resize();
+                chartInstances.readsPerSecChart.setOption(createChartOption(metricsData.readsPerSec, gradients.readsPerSec), true);
+            }
+            if (chartInstances.writesPerSecChart) {
+                chartInstances.writesPerSecChart.resize();
+                chartInstances.writesPerSecChart.setOption(createChartOption(metricsData.writesPerSec, gradients.writesPerSec), true);
+            }
+            if (chartInstances.latencyP99MsChart) {
+                chartInstances.latencyP99MsChart.resize();
+                chartInstances.latencyP99MsChart.setOption(createChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
+            }
         }
     });
-
 
     chartInstances = initCharts();
     await updateCharts(chartInstances);
@@ -27,7 +39,6 @@ window.onload = async () => {
 window.addEventListener('resize', function () {
     if (chartInstances.readsPerSecChart) chartInstances.readsPerSecChart.resize();
     if (chartInstances.writesPerSecChart) chartInstances.writesPerSecChart.resize();
-    if (chartInstances.latencyMeanMsChart) chartInstances.latencyMeanMsChart.resize();
     if (chartInstances.latencyP99MsChart) chartInstances.latencyP99MsChart.resize();
     if (chartInstances.worldGraphChart) chartInstances.worldGraphChart.resize();
 });
@@ -45,20 +56,17 @@ async function fetchAndPrepareData() {
         const response = await fetch('/metrics');
         const data = await response.json();
 
-        // Let's find the last timestamp we have in our data
         let lastTimestamp = 0;
         if (metricsData.readsPerSec.length > 0) {
             lastTimestamp = metricsData.readsPerSec[metricsData.readsPerSec.length - 1][0];
         }
 
-        // Now we only add new data points
         data.forEach(item => {
             const timestamp = item.timestamp;
 
             if (timestamp > lastTimestamp) {
                 metricsData.readsPerSec.push([timestamp, item.reads_per_second]);
                 metricsData.writesPerSec.push([timestamp, item.writes_per_second]);
-                metricsData.latencyMeanMs.push([timestamp, item.latency_mean_ms]);
                 metricsData.latencyP99Ms.push([timestamp, item.latency_p99_ms]);
 
                 totalReads += item.total_reads;
@@ -67,13 +75,11 @@ async function fetchAndPrepareData() {
                 if (metricsData.readsPerSec.length > 300) {
                     metricsData.readsPerSec.shift();
                     metricsData.writesPerSec.shift();
-                    metricsData.latencyMeanMs.shift();
                     metricsData.latencyP99Ms.shift();
                 }
 
                 document.getElementById('readsPerSec').innerText = item.reads_per_second.toLocaleString('en', {maximumFractionDigits: 0}) + " reads/sec";
                 document.getElementById('writesPerSec').innerText = item.writes_per_second.toLocaleString('en', {maximumFractionDigits: 0}) + " writes/sec";
-                document.getElementById('latencyMeanMs').innerText = item.latency_mean_ms.toLocaleString('en', {maximumFractionDigits: 0}) + " ms";
                 document.getElementById('latencyP99Ms').innerText = item.latency_p99_ms.toLocaleString('en', {maximumFractionDigits: 0}) + " ms";
 
                 document.getElementById('totalReads').innerText = totalReads.toLocaleString('en', {maximumFractionDigits: 0}) + " total reads";
@@ -91,33 +97,26 @@ async function fetchAndPrepareData() {
 function initCharts() {
     const readsPerSecChart = echarts.init(document.getElementById('readsPerSecChart'));
     const writesPerSecChart = echarts.init(document.getElementById('writesPerSecChart'));
-    const latencyMeanMsChart = echarts.init(document.getElementById('latencyMeanMsChart'));
     const latencyP99MsChart = echarts.init(document.getElementById('latencyP99MsChart'));
     const worldGraphChart = echarts.init(document.getElementById('worldGraphChart'));
 
     return {
-        readsPerSecChart, writesPerSecChart, latencyMeanMsChart, latencyP99MsChart, worldGraphChart
+        readsPerSecChart, writesPerSecChart, latencyP99MsChart, worldGraphChart
     };
 }
 
 async function updateCharts(chartInstances) {
     await fetchAndPrepareData();
 
-    const gradients = {
-        readsPerSec: ['#00144B', '#00BFFF'],
-        writesPerSec: ['#00144B', '#00BFFF'],
-        latencyMeanMs: ['#06d6a0', '#9fffcb'],
-        latencyP99Ms: ['#06d6a0', '#9fffcb'],
-    };
-
-    chartInstances.readsPerSecChart.setOption(createChartOption(metricsData.readsPerSec, gradients.readsPerSec), true);
-    chartInstances.writesPerSecChart.setOption(createChartOption(metricsData.writesPerSec, gradients.writesPerSec), true);
-    chartInstances.latencyMeanMsChart.setOption(createChartOption(metricsData.latencyMeanMs, gradients.latencyMeanMs), true);
-    chartInstances.latencyP99MsChart.setOption(createChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
-
-    if (activeTabIndex === 2 && chartInstances.worldGraphChart) {
+    if (activeTabIndex === 0) {
         chartInstances.worldGraphChart.setOption(createWorldOption(), true);
         chartInstances.worldGraphChart.resize();
+    }
+
+    if (activeTabIndex === 1) {
+        chartInstances.readsPerSecChart.setOption(createChartOption(metricsData.readsPerSec, gradients.readsPerSec), true);
+        chartInstances.writesPerSecChart.setOption(createChartOption(metricsData.writesPerSec, gradients.writesPerSec), true);
+        chartInstances.latencyP99MsChart.setOption(createChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
     }
 }
 
@@ -130,28 +129,16 @@ function createWorldOption() {
     const opt =  {
         geo3D: {
             map: 'world',
-                shading: 'realistic',
-                silent: true,
-                environment: '#333',
-                realisticMaterial: {
-                roughness: 0.8,
-                    metalness: 0
-            },
+            silent: true,
+            environment: '#5c677d',
+
             postEffect: {
-                enable: true
+                enable: false
             },
             groundPlane: {
                 show: false,
             },
-            light: {
-                main: {
-                    intensity: 1,
-                        alpha: 30
-                },
-                ambient: {
-                    intensity: 0
-                }
-            },
+
             viewControl: {
                 distance: 80,
                     alpha: 90,
@@ -159,7 +146,7 @@ function createWorldOption() {
                     rotateMouseButton: 'right'
             },
             itemStyle: {
-                color: '#000'
+                color: '#001233'
             },
             regionHeight: 0.5
         },
@@ -169,8 +156,8 @@ function createWorldOption() {
                 coordinateSystem: 'geo3D',
                 effect: {
                     show: true,
-                    trailWidth: 1.5,
-                    trailOpacity: 0.25,
+                    trailWidth: 2,
+                    trailOpacity: 0.5,
                     trailLength: 0.2,
                     constantSpeed: 5
                 },
