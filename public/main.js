@@ -2,9 +2,8 @@ let chartInstances = {};
 let devicesData = [];
 let activeTabIndex = 0;
 const gradients = {
-    readsPerSec: ['#00144B', '#00BFFF'],
-    writesPerSec: ['#00144B', '#00BFFF'],
-    latencyP99Ms: ['#06d6a0', '#9fffcb'],
+    opsPerSec: ['#00144B', '#00BFFF'],
+    latencyP99Ms: ['#00BFFF'],
 };
 window.onload = async () => {
     mdc.autoInit();
@@ -15,17 +14,13 @@ window.onload = async () => {
         activeTabIndex = event.detail.index;
 
         if (event.detail.index === 1) {
-            if (chartInstances.readsPerSecChart) {
-                chartInstances.readsPerSecChart.resize();
-                chartInstances.readsPerSecChart.setOption(createChartOption(metricsData.readsPerSec, gradients.readsPerSec), true);
-            }
-            if (chartInstances.writesPerSecChart) {
-                chartInstances.writesPerSecChart.resize();
-                chartInstances.writesPerSecChart.setOption(createChartOption(metricsData.writesPerSec, gradients.writesPerSec), true);
+            if (chartInstances.opsPerSecChart) {
+                chartInstances.opsPerSecChart.resize();
+                chartInstances.opsPerSecChart.setOption(createBarChartOption(metricsData.readsPerSec, metricsData.writesPerSec, gradients.opsPerSec), true);
             }
             if (chartInstances.latencyP99MsChart) {
                 chartInstances.latencyP99MsChart.resize();
-                chartInstances.latencyP99MsChart.setOption(createChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
+                chartInstances.latencyP99MsChart.setOption(createLineChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
             }
         }
     });
@@ -37,8 +32,7 @@ window.onload = async () => {
 };
 
 window.addEventListener('resize', function () {
-    if (chartInstances.readsPerSecChart) chartInstances.readsPerSecChart.resize();
-    if (chartInstances.writesPerSecChart) chartInstances.writesPerSecChart.resize();
+    if (chartInstances.opsPerSecChart) chartInstances.opsPerSecChart.resize();
     if (chartInstances.latencyP99MsChart) chartInstances.latencyP99MsChart.resize();
     if (chartInstances.worldGraphChart) chartInstances.worldGraphChart.resize();
 });
@@ -50,6 +44,7 @@ let metricsData = {
 
 let totalReads = 0;
 let totalWrites = 0;
+let totalOps = 0;
 
 async function fetchAndPrepareData() {
     try {
@@ -71,6 +66,7 @@ async function fetchAndPrepareData() {
 
                 totalReads += item.total_reads;
                 totalWrites += item.total_writes;
+                totalOps += (item.total_reads + item.total_writes);
 
                 if (metricsData.readsPerSec.length > 300) {
                     metricsData.readsPerSec.shift();
@@ -78,30 +74,31 @@ async function fetchAndPrepareData() {
                     metricsData.latencyP99Ms.shift();
                 }
 
+                ops_per_second = item.reads_per_second + item.writes_per_second
+                document.getElementById('opsPerSec').innerText = ops_per_second.toLocaleString('en', {maximumFractionDigits: 0}) + " ops/sec";
                 document.getElementById('readsPerSec').innerText = item.reads_per_second.toLocaleString('en', {maximumFractionDigits: 0}) + " reads/sec";
                 document.getElementById('writesPerSec').innerText = item.writes_per_second.toLocaleString('en', {maximumFractionDigits: 0}) + " writes/sec";
                 document.getElementById('latencyP99Ms').innerText = item.latency_p99_ms.toLocaleString('en', {maximumFractionDigits: 0}) + " ms";
 
+                document.getElementById('totalOps').innerText = totalReads.toLocaleString('en', {maximumFractionDigits: 0}) + " total ops";
                 document.getElementById('totalReads').innerText = totalReads.toLocaleString('en', {maximumFractionDigits: 0}) + " total reads";
                 document.getElementById('totalWrites').innerText = totalWrites.toLocaleString('en', {maximumFractionDigits: 0}) + " total writes";
             }
         });
 
         devicesData = await fetchDevicesData();
-        populateDeviceTable();
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 }
 
 function initCharts() {
-    const readsPerSecChart = echarts.init(document.getElementById('readsPerSecChart'));
-    const writesPerSecChart = echarts.init(document.getElementById('writesPerSecChart'));
+    const opsPerSecChart = echarts.init(document.getElementById('opsPerSecChart'));
     const latencyP99MsChart = echarts.init(document.getElementById('latencyP99MsChart'));
     const worldGraphChart = echarts.init(document.getElementById('worldGraphChart'));
 
     return {
-        readsPerSecChart, writesPerSecChart, latencyP99MsChart, worldGraphChart
+        opsPerSecChart, latencyP99MsChart, worldGraphChart
     };
 }
 
@@ -114,9 +111,8 @@ async function updateCharts(chartInstances) {
     }
 
     if (activeTabIndex === 1) {
-        chartInstances.readsPerSecChart.setOption(createChartOption(metricsData.readsPerSec, gradients.readsPerSec), true);
-        chartInstances.writesPerSecChart.setOption(createChartOption(metricsData.writesPerSec, gradients.writesPerSec), true);
-        chartInstances.latencyP99MsChart.setOption(createChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
+        chartInstances.opsPerSecChart.setOption(createBarChartOption(metricsData.readsPerSec, metricsData.writesPerSec, gradients.readsPerSec), true);
+        chartInstances.latencyP99MsChart.setOption(createLineChartOption(metricsData.latencyP99Ms, gradients.latencyP99Ms), true);
     }
 }
 
@@ -174,26 +170,87 @@ function createWorldOption() {
     return opt;
 }
 
-function createChartOption(data, gradientColors) {
+function createBarChartOption(readsData, writesData, gradientColors) {
+    // Combine reads and writes data
+    const combinedData = combineDataForStackedBar(readsData, writesData);
+
     return {
-        tooltip: {trigger: 'axis'}, xAxis: {
-            type: 'time', splitLine: {
-                show: false
-            }
-        }, yAxis: {type: 'value'}, series: [{
-            data: data, type: 'line', step: 'start', symbol: 'none', areaStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                    offset: 0,
+        tooltip: { trigger: 'axis' },
+        xAxis: {
+            type: 'category',
+            data: combinedData.timestamps
+        },
+        yAxis: { type: 'value' },
+        series: [
+            {
+                name: 'Reads',
+                data: combinedData.reads,
+                type: 'bar',
+                stack: 'total',
+                itemStyle: {
                     color: gradientColors[0]
-                }, {offset: 1, color: gradientColors[1]}])
-            }, lineStyle: {
-                opacity: 0
-            }, itemStyle: {
+                }
+            },
+            {
+                name: 'Writes',
+                data: combinedData.writes,
+                type: 'bar',
+                stack: 'total',
+                itemStyle: {
+                    color: gradientColors[1]
+                }
+            }
+        ]
+    };
+}
+
+function combineDataForStackedBar(readsData, writesData) {
+    let timestamps = [];
+    let reads = [];
+    let writes = [];
+
+    // Assuming readsData and writesData are aligned and of the same length
+    for (let i = 0; i < readsData.length; i++) {
+        timestamps.push(formatTimestamp(readsData[i][0])); // Format timestamp as needed
+        reads.push(readsData[i][1]);
+        writes.push(writesData[i][1]);
+    }
+
+    return { timestamps, reads, writes };
+}
+
+// Add a function to format timestamps if necessary
+function formatTimestamp(timestamp) {
+    // Format the timestamp as required for the xAxis
+    // Example: return new Date(timestamp).toLocaleString();
+    return new Date(timestamp).toLocaleString();
+}
+
+
+function createLineChartOption(data, gradientColors) {
+    return {
+        tooltip: { trigger: 'axis' },
+        xAxis: {
+            type: 'time',
+            splitLine: { show: false }
+        },
+        yAxis: { type: 'value' },
+        series: [{
+            data: data,
+            type: 'line',
+            step: 'start',
+            symbol: 'none',
+            lineStyle: {
+                opacity: 1,
+                color: gradientColors[0]
+            },
+            itemStyle: {
                 color: gradientColors[0]
             }
         }]
     };
 }
+
 
 async function fetchDevicesData() {
     try {
@@ -203,33 +260,4 @@ async function fetchDevicesData() {
         console.error('Error fetching devices data:', error);
         return [];
     }
-}
-
-function populateDeviceTable() {
-    const tableBody = document.querySelector('#deviceTable .mdc-data-table__content');
-    tableBody.innerHTML = '';  // Clear the existing content
-
-    devicesData.forEach(device => {
-        const row = document.createElement('tr');
-        row.className = 'mdc-data-table__row';
-
-        const cellIp = document.createElement('td');
-        cellIp.className = 'mdc-data-table__cell';
-        cellIp.innerText = device.ipv4;
-        row.appendChild(cellIp);
-
-        const cellUuid = document.createElement('td');
-        cellUuid.className = 'mdc-data-table__cell';
-        cellUuid.innerText = device.uuid;
-        row.appendChild(cellUuid);
-
-        const cellSensorData = document.createElement('td');
-        cellSensorData.className = 'mdc-data-table__cell';
-        cellSensorData.innerText = device.sensor_data;
-        row.appendChild(cellSensorData);
-
-        tableBody.appendChild(row);
-    });
-
-    const dataTable = new mdc.dataTable.MDCDataTable(document.querySelector('#deviceTable'));
 }
